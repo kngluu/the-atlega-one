@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Atlega Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    input { padding: 10px; margin: 5px; width: 90%; max-width: 300px; }
+    button { padding: 10px 20px; margin: 10px; border: none; background: #0066cc; color: white; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #004a99; }
+    .box { margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; max-width: 400px; }
+  </style>
+</head>
+<body>
+  <h2>Atlega Demo</h2>
+  <div class="box">
+    <h3>Register / Login</h3>
+    <input id="email" type="email" placeholder="Email"><br>
+    <input id="password" type="password" placeholder="Password"><br>
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div class="box">
+    <h3>Save & Read Data</h3>
+    <input id="username" type="text" placeholder="Enter your name"><br>
+    <button onclick="saveData()">Save Data</button>
+    <button onclick="readData()">Read Data</button>
+    <p id="output"></p>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+
+    // 🔑 Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCubXcIDVtBQRrvfBlb_erkGIlUiR9oSFg",
+      authDomain: "atlega-test.firebaseapp.com",
+      databaseURL: "https://atlega-test-default-rtdb.firebaseio.com",
+      projectId: "atlega-test",
+      storageBucket: "atlega-test.appspot.com",
+      messagingSenderId: "198599584563",
+      appId: "1:198599584563:web:677e60c981cd4c76812c46",
+      measurementId: "G-9RR4TKTNJS"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Register
+    window.register = function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => alert("✅ Registered!"))
+        .catch((err) => alert("❌ " + err.message));
+    }
+
+    // Login
+    window.login = function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => alert("✅ Logged in!"))
+        .catch((err) => alert("❌ " + err.message));
+    }
+
+    // Save Data
+    window.saveData = function() {
+      const user = auth.currentUser;
+      if (!user) { alert("Please login first"); return; }
+      const name = document.getElementById("username").value;
+      set(ref(db, "users/" + user.uid), {
+        username: name,
+        email: user.email
+      }).then(() => alert("✅ Data saved!"));
+    }
+
+    // Read Data
+    window.readData = function() {
+      const user = auth.currentUser;
+      if (!user) { alert("Please login first"); return; }
+      const dbRef = ref(db);
+      get(child(dbRef, "users/" + user.uid)).then((snapshot) => {
+        if (snapshot.exists()) {
+          document.getElementById("output").innerText = "👤 " + JSON.stringify(snapshot.val());
+        } else {
+          document.getElementById("output").innerText = "No data found.";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
