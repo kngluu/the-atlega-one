@@ -1,1 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atlega Dashboard</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+    // --- Your Firebase Config ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCubXcIDVtBQRrvfBlb_erkGIlUiR9oSFg",
+      authDomain: "atlega-test.firebaseapp.com",
+      projectId: "atlega-test",
+      storageBucket: "atlega-test.firebasestorage.app",
+      messagingSenderId: "198599584563",
+      appId: "1:198599584563:web:677e60c981cd4c76812c46",
+      measurementId: "G-9RR4TKTNJS"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // --- Check if user is logged in ---
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userRef = ref(db, 'users/' + user.uid);
+        get(userRef).then(snapshot => {
+          if (snapshot.exists()) {
+            document.getElementById("username").textContent = snapshot.val().username;
+            document.getElementById("email").textContent = user.email;
+          }
+        });
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+
+    // --- Logout Function ---
+    window.logout = function() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    }
+  </script>
+  <style>
+    body {
+      font-family: Poppins, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(120deg, #1a73e8, #00bfa5);
+      color: white;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      width: 80%;
+      margin: 0 auto;
+      max-width: 400px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: white;
+      color: #1a73e8;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    button:hover { background: #00bfa5; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Atlega 👋</h1>
+  <div class="card">
+    <h2 id="username">Loading...</h2>
+    <p id="email"></p>
+    <p>You're part of something great — "Together Let's Try It"</p>
+    <button onclick="logout()">Logout</button>
+  </div>
+</body>
+</html>
 
