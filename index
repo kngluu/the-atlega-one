@@ -70,6 +70,8 @@
       signInWithEmailAndPassword(auth, email, password)
         .then(() => alert("✅ Logged in!"))
         .catch((err) => alert("❌ " + err.message));
+    window.location.href = "dashboard.html";
+
     }
 
     // Save Data
