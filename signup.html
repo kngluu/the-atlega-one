@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Atlega — Signup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold text-center mb-4">Create Account</h2>
+
+    <form id="signupForm" class="space-y-3">
+      <input id="displayName" type="text" placeholder="Full name" required class="w-full p-3 border rounded" />
+      <input id="email" type="email" placeholder="Email" required class="w-full p-3 border rounded" />
+      <input id="password" type="password" placeholder="Password" required class="w-full p-3 border rounded" />
+      <button type="submit" class="w-full bg-green-600 text-white p-3 rounded">Create account</button>
+    </form>
+
+    <div class="my-3 text-center text-sm text-gray-500">or</div>
+    <button id="googleSignup" class="w-full p-2 border rounded flex items-center justify-center gap-2">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google"/> Sign up with Google
+    </button>
+
+    <p id="signupErr" class="text-sm text-red-500 mt-3"></p>
+  </div>
+
+  <script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { ref, set } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    const signupForm = document.getElementById('signupForm');
+    const googleSignup = document.getElementById('googleSignup');
+    const signupErr = document.getElementById('signupErr');
+    const provider = new GoogleAuthProvider();
+
+    signupForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      signupErr.textContent = '';
+      try{
+        const name = document.getElementById('displayName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await set(ref(db, `users/${cred.user.uid}`), { uid: cred.user.uid, name, email, points: 0, createdAt: Date.now() });
+        location.href = 'dashboard.html';
+      }catch(err){
+        signupErr.textContent = err.message || 'Signup failed';
+      }
+    });
+
+    googleSignup.addEventListener('click', async ()=>{
+      try{
+        const cred = await signInWithPopup(auth, provider);
+        const user = cred.user;
+        await set(ref(db, `users/${user.uid}`), { uid: user.uid, name: user.displayName || '', email: user.email || '', photoURL: user.photoURL || '', points: 20, createdAt: Date.now() });
+        location.href = 'dashboard.html';
+      }catch(err){
+        signupErr.textContent = err.message || 'Google signup failed';
+      }
+    });
+  </script>
+</body>
+</html>
