@@ -1,89 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Atlega Dashboard</title>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
-
-    // --- Your Firebase Config ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyCubXcIDVtBQRrvfBlb_erkGIlUiR9oSFg",
-      authDomain: "atlega-test.firebaseapp.com",
-      projectId: "atlega-test",
-      storageBucket: "atlega-test.firebasestorage.app",
-      messagingSenderId: "198599584563",
-      appId: "1:198599584563:web:677e60c981cd4c76812c46",
-      measurementId: "G-9RR4TKTNJS"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    // --- Check if user is logged in ---
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userRef = ref(db, 'users/' + user.uid);
-        get(userRef).then(snapshot => {
-          if (snapshot.exists()) {
-            document.getElementById("username").textContent = snapshot.val().username;
-            document.getElementById("email").textContent = user.email;
-          }
-        });
-      } else {
-        window.location.href = "index.html";
-      }
-    });
-
-    // --- Logout Function ---
-    window.logout = function() {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
-    }
-  </script>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Atlega — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: Poppins, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background: linear-gradient(120deg, #1a73e8, #00bfa5);
-      color: white;
-    }
-    .card {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      width: 80%;
-      margin: 0 auto;
-      max-width: 400px;
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      background: white;
-      color: #1a73e8;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 15px;
-    }
-    button:hover { background: #00bfa5; color: white; }
+    .fade-in{animation:fadeIn .4s ease forwards;opacity:0}
+    @keyframes fadeIn{to{opacity:1}}
   </style>
 </head>
-<body>
-  <h1>Welcome to Atlega 👋</h1>
-  <div class="card">
-    <h2 id="username">Loading...</h2>
-    <p id="email"></p>
-    <p>You're part of something great — "Together Let's Try It"</p>
-    <button onclick="logout()">Logout</button>
-  </div>
+<body class="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center">
+  <header class="w-full bg-white/80 backdrop-blur sticky top-0 z-20">
+    <div class="max-w-4xl mx-auto flex items-center justify-between p-4">
+      <div class="flex items-center gap-3">
+        <div id="avatar" class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">A</div>
+        <div>
+          <div id="displayName" class="font-semibold">User</div>
+          <div id="displayEmail" class="text-xs text-gray-500">email</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="themeToggle" class="px-3 py-1 border rounded">Theme</button>
+        <button id="logoutBtn" class="px-3 py-1 bg-red-500 text-white rounded">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="w-full max-w-4xl mx-auto p-4 fade-in">
+    <section class="bg-white p-4 rounded-lg shadow mb-4">
+      <h2 id="greeting" class="text-lg font-semibold">Welcome, User — Let's Try It Together 👋</h2>
+      <p class="text-sm text-gray-500 mt-1">Earn points from tasks, watch ads, and redeem your rewards.</p>
+      <div class="mt-4 flex items-center justify-between">
+        <div>
+          <div class="text-sm text-gray-500">Your Balance</div>
+          <div id="balanceValue" class="text-3xl font-bold text-green-600">0</div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm text-gray-500">Referral Code</div>
+          <div id="refCode" class="font-mono">—</div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="flex gap-2 mb-4">
+      <button data-tab="tasks" class="px-3 py-2 rounded bg-blue-600 text-white">Tasks</button>
+      <button data-tab="earn" class="px-3 py-2 rounded border">Earn</button>
+      <button data-tab="withdraw" class="px-3 py-2 rounded border">Withdraw</button>
+      <button data-tab="history" class="px-3 py-2 rounded border">History</button>
+    </nav>
+
+    <section id="tasks" class="mb-4">
+      <h3 class="font-semibold mb-2">Available Tasks</h3>
+      <div id="tasksContainer" class="grid md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <section id="earn" class="hidden mb-4">
+      <h3 class="font-semibold mb-2">Quick Earn</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <button class="quick-earn p-3 bg-blue-600 text-white rounded" data-pts="5">Watch Ad (5)</button>
+        <button class="quick-earn p-3 bg-green-600 text-white rounded" data-pts="10">Read Article (10)</button>
+        <button class="quick-earn p-3 bg-purple-600 text-white rounded" data-pts="20">Refer Friend (20)</button>
+      </div>
+    </section>
+
+    <section id="withdraw" class="hidden mb-4">
+      <h3 class="font-semibold mb-2">Withdraw</h3>
+      <p class="text-sm text-gray-500 mb-2">Minimum 50 points to withdraw. Requests are reviewed by admin.</p>
+      <input id="withdrawAmount" type="number" placeholder="Amount (points)" class="w-full p-2 border rounded mb-2"/>
+      <select id="withdrawMethod" class="w-full p-2 border rounded mb-2">
+        <option value="paypal">PayPal</option>
+        <option value="crypto">Crypto (USDT/BTC)</option>
+        <option value="mobile">Mobile Money</option>
+      </select>
+      <input id="withdrawAccount" type="text" placeholder="PayPal email / Crypto address / Phone" class="w-full p-2 border rounded mb-2"/>
+      <button id="submitWithdraw" class="w-full p-2 bg-red-500 text-white rounded">Submit Withdrawal</button>
+    </section>
+
+    <section id="history" class="hidden mb-4">
+      <h3 class="font-semibold mb-2">History</h3>
+      <div id="historyList" class="space-y-2"></div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/firebase-config.js"></script>
+  <script type="module" src="./js/auth.js"></script>
+  <script type="module" src="./js/rewards.js"></script>
+  <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>
-
