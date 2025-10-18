@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Atlega — Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-200 flex items-center justify-center">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
+    <div class="text-center mb-4">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-700 text-white font-bold">A</div>
+      <h1 class="text-2xl font-semibold mt-2">Atlega — Earn Rewards</h1>
+      <p class="text-sm text-gray-600">Let’s Try It Together</p>
+    </div>
+
+    <form id="loginForm" class="space-y-3">
+      <input id="email" type="email" placeholder="Email" required class="w-full p-3 border rounded" />
+      <input id="password" type="password" placeholder="Password" required class="w-full p-3 border rounded" />
+      <button type="submit" class="w-full bg-blue-700 text-white p-3 rounded">Login</button>
+    </form>
+
+    <div class="my-3 text-center text-sm text-gray-500">or</div>
+
+    <div class="flex gap-3">
+      <button id="googleLogin" class="w-1/2 p-2 border rounded flex items-center justify-center gap-2">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google"/> Google
+      </button>
+      <a href="signup.html" class="w-1/2 inline-flex items-center justify-center p-2 bg-gray-100 rounded">Sign Up</a>
+    </div>
+
+    <p id="loginErr" class="text-red-500 text-sm mt-3"></p>
+  </div>
+
+  <script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    import { ref, set, get, child } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+    const provider = new GoogleAuthProvider();
+    const loginForm = document.getElementById('loginForm');
+    const googleLogin = document.getElementById('googleLogin');
+    const errEl = document.getElementById('loginErr');
+
+    loginForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      errEl.textContent = '';
+      try{
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        await signInWithEmailAndPassword(auth, email, password);
+        location.href = 'dashboard.html';
+      } catch(err){
+        errEl.textContent = err.message || 'Login failed';
+      }
+    });
+
+    googleLogin.addEventListener('click', async ()=>{
+      try{
+        const cred = await signInWithPopup(auth, provider);
+        const user = cred.user;
+        // ensure user record and welcome bonus
+        const snap = await get(child(ref(db), `users/${user.uid}`));
+        if(!snap.exists()){
+          await set(ref(db, `users/${user.uid}`), { uid: user.uid, name: user.displayName || '', email: user.email, photoURL: user.photoURL || '', points: 20, createdAt: Date.now() });
+        } else {
+          // ensure points field exists
+          if(!snap.val().points) await set(ref(db, `users/${user.uid}/points`), snap.val().points || 0);
+        }
+        location.href = 'dashboard.html';
+      }catch(err){
+        errEl.textContent = err.message || 'Google sign-in failed';
+      }
+    });
+  </script>
+</body>
+</html>
